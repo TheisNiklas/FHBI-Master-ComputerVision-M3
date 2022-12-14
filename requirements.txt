@@ -5,3 +5,4 @@ ipykernel
 pillow
 matplotlib
 tensorflow-datasets
+scipy

@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 
 
 class DataLoader:
@@ -30,7 +31,7 @@ class DataLoader:
         self.seed = seed
 
     def loadDatasets(
-        self, dataDir: str, batchSize: int
+        self, dataDir: str, batchSize: int, labels: list = []
     ) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
         """
         Loads a dataset and split it into train, validation and test datasets
@@ -42,18 +43,40 @@ class DataLoader:
         Returns:
             tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]: datasets in the order train, validation, test
         """
+        if labels.__len__() == 0:
+            labels = "inferred"
+
         ds: tf.data.Dataset = tf.keras.utils.image_dataset_from_directory(
             dataDir,
             seed=123,
             shuffle=False,
             image_size=(self.imageHeight, self.imageWidth),
             batch_size=1,
-            labels="inferred",
+            labels=labels,
             
         )  # type: ignore
         ds, dsSize = self.__unbatchDataset(ds)
         return self.__createDatasets(ds, dsSize, batchSize)
 
+    def loadDatasetsCustom(
+        self, dataDir: str, batchSize: int, labels: list = []
+    ) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+        ds: tf.data.Dataset
+        for _, _, files in os.walk(dataDir):
+            filteredFiles = [ fi for fi in files if fi.endswith(".jpg") ]
+            fullPathFiles = [ os.path.join(dataDir, fi) for fi in filteredFiles]
+            ds = tf.data.Dataset.from_tensor_slices((fullPathFiles, labels))
+            ds = ds.map(self.__readImage)
+            dsSize = ds.__len__().numpy()
+            return self.__createDatasets(ds, dsSize, batchSize)
+    
+    @staticmethod
+    def __readImage(image_file, label):
+        image = tf.io.read_file(image_file)
+        image = tf.image.decode_image(image, channels=3)
+        image = tf.image.resize(image, (224,224))
+        return image, label
+    
     def __unbatchDataset(self, ds: tf.data.Dataset) -> tuple[tf.data.Dataset, int]:
         dsSize = ds.__len__().numpy()
         ds = ds.unbatch()

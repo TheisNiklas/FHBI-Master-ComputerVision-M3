@@ -155,12 +155,12 @@ class ModelLoader:
         model = baseModel(preprocess_layer)
         
         face_detection_branch = tf.keras.layers.GlobalAveragePooling2D(name="face_gap2d")(model)
-        face_detection_branch = tf.keras.layers.Dropout(0.5, name="face_dropout_1")(face_detection_branch)
+        face_detection_branch = tf.keras.layers.Dropout(0.2, name="face_dropout_1")(face_detection_branch)
         face_detection_branch = tf.keras.layers.Dense(1, activation="sigmoid", name="out_face_detection")(face_detection_branch)
         
         mask_detection_branch = tf.keras.layers.GlobalAveragePooling2D(name="mask_gap2d")(model)
         mask_detection_branch = tf.keras.layers.Dense(128, activation="relu", name="mask_dropout_1")(mask_detection_branch)
-        mask_detection_branch = tf.keras.layers.Dropout(0.5, name="mask_dense_1")(mask_detection_branch)
+        mask_detection_branch = tf.keras.layers.Dropout(0.2, name="mask_dense_1")(mask_detection_branch)
         mask_detection_branch = tf.keras.layers.Dense(1, activation="sigmoid", name="out_mask_detection")(mask_detection_branch)
         
         age_prediction_branch = tf.keras.layers.GlobalAveragePooling2D(name="age_gap2d")(model)

@@ -1,0 +1,9 @@
+186/186 [==============================] - 10s 52ms/step - loss: 0.8817 - out_face_detection_loss: 0.0052 - out_mask_detection_loss: 0.0249 - out_age_prediction_loss: 2.6418 - out_face_detection_binary_accuracy: 0.9988 - out_mask_detection_binary_accuracy: 0.9981 - out_age_prediction_sparse_categorical_accuracy: 0.2472
+
+[0.8817152976989746,
+ 0.005206682253628969,
+ 0.024870164692401886,
+ 2.64178729057312,
+ 0.9988203644752502,
+ 0.9981462955474854,
+ 0.24721941351890564]

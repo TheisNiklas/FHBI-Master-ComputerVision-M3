@@ -148,25 +148,27 @@ class ModelLoader:
             weights="imagenet",  # type: ignore
         )
         
+        baseModel.trainable = False
+        
         inputs = tf.keras.Input(shape=(self.imgWidth, self.imgHeight, self.imgDepth), name="input")
         preprocess_layer = tf.keras.applications.mobilenet.preprocess_input(inputs)
         model = baseModel(preprocess_layer)
         
-        face_detection_branch = tf.keras.layers.GlobalAveragePooling2D()(model)
-        face_detection_branch = tf.keras.layers.Dropout(0.5)(face_detection_branch)
+        face_detection_branch = tf.keras.layers.GlobalAveragePooling2D(name="face_gap2d")(model)
+        face_detection_branch = tf.keras.layers.Dropout(0.5, name="face_dropout_1")(face_detection_branch)
         face_detection_branch = tf.keras.layers.Dense(1, activation="sigmoid", name="out_face_detection")(face_detection_branch)
         
-        mask_detection_branch = tf.keras.layers.GlobalAveragePooling2D()(model)
-        mask_detection_branch = tf.keras.layers.Dense(128, activation="relu")(mask_detection_branch)
-        mask_detection_branch = tf.keras.layers.Dropout(0.5)(mask_detection_branch)
+        mask_detection_branch = tf.keras.layers.GlobalAveragePooling2D(name="mask_gap2d")(model)
+        mask_detection_branch = tf.keras.layers.Dense(128, activation="relu", name="mask_dropout_1")(mask_detection_branch)
+        mask_detection_branch = tf.keras.layers.Dropout(0.5, name="mask_dense_1")(mask_detection_branch)
         mask_detection_branch = tf.keras.layers.Dense(1, activation="sigmoid", name="out_mask_detection")(mask_detection_branch)
         
-        age_prediction_branch = tf.keras.layers.GlobalAveragePooling2D()(model)
-        age_prediction_branch = tf.keras.layers.Dense(256, activation="relu")(age_prediction_branch)
-        age_prediction_branch = tf.keras.layers.Dropout(ageDropout)(age_prediction_branch)
-        age_prediction_branch = tf.keras.layers.Dense(128, activation="relu")(age_prediction_branch)
-        age_prediction_branch = tf.keras.layers.Dropout(ageDropout)(age_prediction_branch)
-        age_prediction_branch = tf.keras.layers.Dense(1, activation="softmax", name="out_age_prediction")(age_prediction_branch)
+        age_prediction_branch = tf.keras.layers.GlobalAveragePooling2D(name="age_gap2d")(model)
+        age_prediction_branch = tf.keras.layers.Dense(256, activation="relu", name="age_dense_1")(age_prediction_branch)
+        age_prediction_branch = tf.keras.layers.Dropout(ageDropout, name="age_dropout_1")(age_prediction_branch)
+        age_prediction_branch = tf.keras.layers.Dense(128, activation="relu", name="age_dense_2")(age_prediction_branch)
+        age_prediction_branch = tf.keras.layers.Dropout(ageDropout, name="age_dropout_2")(age_prediction_branch)
+        age_prediction_branch = tf.keras.layers.Dense(10, activation="softmax", name="out_age_prediction")(age_prediction_branch)
         
         outputs = [face_detection_branch, mask_detection_branch, age_prediction_branch]
         model = tf.keras.Model(inputs, outputs)
